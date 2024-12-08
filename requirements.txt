@@ -2,3 +2,4 @@ requests==2.32.3
 scylla-driver==3.28.0
 fastapi==0.115.6
 uvicorn==0.32.1
+cqlsh==6.2.0
