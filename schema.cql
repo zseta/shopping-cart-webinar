@@ -1,4 +1,4 @@
-CREATE KEYSPACE IF NOT EXISTS ecommerce WITH replication = { 'class': 'NetworkTopologyStrategy', 'replication_factor': '1' };
+CREATE KEYSPACE IF NOT EXISTS ecommerce WITH replication = { 'class': 'NetworkTopologyStrategy', 'replication_factor': '1' } AND tablets = {'enabled': false};
 
 CREATE TABLE ecommerce.product (
     id UUID,
