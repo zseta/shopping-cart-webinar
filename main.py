@@ -23,6 +23,7 @@ class CartItem(BaseModel):
     quantity: int = None
     
 
+# todo: add query
 def fetch_active_cart(user_id):
     return client.execute("SELECT * FROM cart WHERE user_id = %s AND is_active = true;", [user_id]).one()
     
@@ -38,12 +39,13 @@ def products(limit: int = 10):
     return client.execute(query).all()
 
 
+# todo: add query
 @app.get("/products/{product_id}", tags=["products"])
 def product(product_id):
     query = "SELECT * FROM product WHERE id = %s;"
     return client.execute(query, [uuid.UUID(product_id), ]).one()
 
-
+# todo: add query
 @app.get("/cart/{user_id}", tags=["cart"])
 def cart(user_id):
     active_cart = fetch_active_cart(user_id)
@@ -53,6 +55,7 @@ def cart(user_id):
     return client.execute(query, [user_id, active_cart["cart_id"]]).all()
 
 
+# todo: add query
 @app.post("/cart/{user_id}", tags=["cart"])
 def add_to_cart(user_id, cart_item: CartItem):
     active_cart = fetch_active_cart(user_id)
@@ -104,5 +107,5 @@ def checkout(user_id):
     active_cart = fetch_active_cart(user_id)
     if active_cart is None:
         raise HTTPException(status_code=404, detail="User does not have an active cart")
-    query = "UPDATE cart SET is_active = false WHERE user_id = %s AND cart_id = %s"
+    query = "UPDATE cart SET is_active = false WHERE user_id = %s AND cart_id = %s;"
     return client.execute(query, [user_id, active_cart["cart_id"]])
