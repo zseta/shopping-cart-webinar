@@ -37,6 +37,8 @@ def home():
 # todo: add query
 @app.get("/products", tags=["products"])
 def products(limit: int = 10):
+    """Return a list of products.
+    """
     query = ""
     return client.execute(query).all()
 
@@ -44,12 +46,16 @@ def products(limit: int = 10):
 # todo: add query
 @app.get("/products/{product_id}", tags=["products"])
 def product(product_id):
+    """Return details about the product.
+    """
     query = ""
     return client.execute(query, [uuid.UUID(product_id), ]).one()
 
 # todo: add query
 @app.get("/cart/{user_id}", tags=["cart"])
 def cart(user_id):
+    """Return products in the user's active cart.
+    """
     active_cart = fetch_active_cart(user_id)
     if active_cart is None:
         raise HTTPException(status_code=404, detail="No items found in cart")
@@ -60,6 +66,9 @@ def cart(user_id):
 # todo: add query
 @app.post("/cart/{user_id}", tags=["cart"])
 def add_to_cart(user_id, cart_item: CartItem):
+    """Add product in the user's active cart.
+    If there's no active cart, create it first.
+    """
     active_cart = fetch_active_cart(user_id)
     if active_cart is None: # no active cart, create a new one
         active_cart_id = uuid.uuid4()
