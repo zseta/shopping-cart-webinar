@@ -25,8 +25,7 @@ class CartItem(BaseModel):
 
 # todo: add query
 def fetch_active_cart(user_id):
-    query = ""
-    return client.execute(query, [user_id]).one()
+    return client.execute("SELECT * FROM cart WHERE user_id = %s AND is_active = true;", [user_id]).one()
     
 
 @app.get("/", tags=["home"])
@@ -34,50 +33,37 @@ def home():
     return {"Hello World!": "ScyllaDB Ecommerce sample application"}
 
 
-# todo: add query
 @app.get("/products", tags=["products"])
 def products(limit: int = 10):
-    """Return a list of products.
-    """
-    query = ""
+    query = f"SELECT * FROM product LIMIT {limit};"
     return client.execute(query).all()
 
 
-# todo: add query
 @app.get("/products/{product_id}", tags=["products"])
 def product(product_id):
-    """Return details about the product.
-    """
-    query = ""
+    query = "SELECT * FROM product WHERE id = %s;"
     return client.execute(query, [uuid.UUID(product_id), ]).one()
 
-# todo: add query
 @app.get("/cart/{user_id}", tags=["cart"])
 def cart(user_id):
-    """Return products in the user's active cart.
-    """
     active_cart = fetch_active_cart(user_id)
     if active_cart is None:
         raise HTTPException(status_code=404, detail="No items found in cart")
-    query = ""
+    query = "SELECT * FROM cart_items WHERE user_id = %s AND cart_id = %s;"
     return client.execute(query, [user_id, active_cart["cart_id"]]).all()
 
 
-# todo: add query
 @app.post("/cart/{user_id}", tags=["cart"])
 def add_to_cart(user_id, cart_item: CartItem):
-    """Add product in the user's active cart.
-    If there's no active cart, create it first.
-    """
     active_cart = fetch_active_cart(user_id)
     if active_cart is None: # no active cart, create a new one
         active_cart_id = uuid.uuid4()
-        client.execute("", [user_id, active_cart_id])
+        client.execute("INSERT INTO cart(user_id, cart_id, is_active) VALUES (%s, %s, true)", [user_id, active_cart_id])
     else: # use existing cart
         active_cart_id = active_cart["cart_id"]
     
     # add the product to cart  
-    query = ""
+    query = "INSERT INTO cart_items (user_id, cart_id, product_id, product_quantity) VALUES (%s, %s, %s, %s)"
     values = [user_id, active_cart_id, uuid.UUID(cart_item.product_id), cart_item.quantity]
     return client.execute(query, values)
 
@@ -113,11 +99,10 @@ def delete_product(product_id):
     return client.execute(query, [uuid.UUID(product_id)])
 
 
-# todo: add query
 @app.post("/cart/{user_id}/checkout", tags=["cart"])
 def checkout(user_id):
     active_cart = fetch_active_cart(user_id)
     if active_cart is None:
         raise HTTPException(status_code=404, detail="User does not have an active cart")
-    query = ""
+    query = "UPDATE cart SET is_active = false WHERE user_id = %s AND cart_id = %s;"
     return client.execute(query, [user_id, active_cart["cart_id"]])
