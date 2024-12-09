@@ -59,7 +59,7 @@ def cart(user_id):
     active_cart = fetch_active_cart(user_id)
     if active_cart is None:
         raise HTTPException(status_code=404, detail="No items found in cart")
-    query = "SELECT * FROM cart_items WHERE user_id = %s AND cart_id = %s;"
+    query = ""
     return client.execute(query, [user_id, active_cart["cart_id"]]).all()
 
 
@@ -72,12 +72,12 @@ def add_to_cart(user_id, cart_item: CartItem):
     active_cart = fetch_active_cart(user_id)
     if active_cart is None: # no active cart, create a new one
         active_cart_id = uuid.uuid4()
-        client.execute("INSERT INTO cart(user_id, cart_id, is_active) VALUES (%s, %s, true)", [user_id, active_cart_id])
+        client.execute("", [user_id, active_cart_id])
     else: # use existing cart
         active_cart_id = active_cart["cart_id"]
     
     # add the product to cart  
-    query = "INSERT INTO cart_items (user_id, cart_id, product_id, product_quantity) VALUES (%s, %s, %s, %s)"
+    query = ""
     values = [user_id, active_cart_id, uuid.UUID(cart_item.product_id), cart_item.quantity]
     return client.execute(query, values)
 
