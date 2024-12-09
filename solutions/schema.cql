@@ -5,20 +5,21 @@ CREATE TABLE ecommerce.product (
     name TEXT,
     price FLOAT,
     img TEXT,
-    PRIMARY KEY ()
+    PRIMARY KEY (id)
 );
 
 CREATE TABLE ecommerce.cart (
     user_id TEXT,
     cart_id UUID,
     is_active BOOLEAN,
-    PRIMARY KEY ()
+    PRIMARY KEY (user_id, cart_id)
 );
+CREATE INDEX cart_is_active ON ecommerce.cart ((user_id), is_active);
 
 CREATE TABLE ecommerce.cart_items (
     user_id TEXT,
     cart_id UUID,
     product_id UUID,
     product_quantity INT,
-    PRIMARY KEY ()
+    PRIMARY KEY (user_id, cart_id, product_id)
 ) WITH cdc = {'enabled': true, 'preimage': true, 'postimage': true};
